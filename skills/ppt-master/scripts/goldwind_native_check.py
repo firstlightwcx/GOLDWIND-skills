@@ -92,6 +92,9 @@ def check_toc(prs: Presentation, errors: list[str]) -> None:
         fail(errors, "Slide 2 missing TOC title '目录'.")
     if "1." not in texts or "2." not in texts:
         fail(errors, "Slide 2 TOC items are missing numbered agenda entries.")
+    for shape in slide.shapes:
+        if getattr(shape, "is_placeholder", False) and getattr(shape, "has_text_frame", False) and inch(shape.top) <= 1.0:
+            fail(errors, "Slide 2 contains an unused top title placeholder; WPS may show placeholder prompt text.")
     left_pictures = []
     for shape in slide.shapes:
         if shape.shape_type != MSO_SHAPE_TYPE.PICTURE:
@@ -138,8 +141,18 @@ def check_content_titles(prs: Presentation, errors: list[str]) -> None:
         index = slide_zero_idx + 1
         slide = prs.slides[slide_zero_idx]
         texts = [text_of(shape) for shape in slide.shapes if text_of(shape)]
-        if not any("「" in txt and "」" in txt for txt in texts):
+        titles = [txt for txt in texts if "「" in txt and "」" in txt]
+        if not titles:
             fail(errors, f"Slide {index} missing Goldwind content title format like 01「标题」.")
+        if len(titles) > 1:
+            fail(errors, f"Slide {index} has duplicate Goldwind content titles: {titles!r}.")
+        top_placeholders = [
+            text_of(shape)
+            for shape in slide.shapes
+            if getattr(shape, "is_placeholder", False) and getattr(shape, "has_text_frame", False) and inch(shape.top) <= 1.0
+        ]
+        if not any("「" in txt and "」" in txt for txt in top_placeholders):
+            fail(errors, f"Slide {index} top title placeholder is not filled; WPS may show placeholder prompt text.")
 
 
 def check(path: Path) -> list[str]:

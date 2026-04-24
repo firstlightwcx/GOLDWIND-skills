@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from copy import deepcopy
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 
 try:
@@ -127,6 +128,44 @@ def text_box(slide, x, y, w, h, text="", size=18, color=BODY, bold=False, align=
     return shape
 
 
+def top_title_placeholder(slide):
+    for shape in slide.shapes:
+        if not getattr(shape, "is_placeholder", False) or not getattr(shape, "has_text_frame", False):
+            continue
+        if shape.top <= Inches(1.0) and shape.left <= Inches(1.0):
+            return shape
+    return None
+
+
+def remove_top_title_placeholder(slide) -> None:
+    shape = top_title_placeholder(slide)
+    if shape is not None:
+        shape._element.getparent().remove(shape._element)  # noqa: SLF001 - remove unused placeholder prompt.
+
+
+def set_title_placeholder(slide, text: str) -> None:
+    shape = top_title_placeholder(slide)
+    if shape is None:
+        text_box(slide, 0.763, 0.276, 6.8, 0.50, text, 20, PRIMARY, True)
+        return
+    shape.left = inches(0.763)
+    shape.top = inches(0.276)
+    shape.width = inches(6.8)
+    shape.height = inches(0.50)
+    tf = shape.text_frame
+    tf.clear()
+    tf.margin_left = 0
+    tf.margin_right = 0
+    tf.margin_top = 0
+    tf.margin_bottom = 0
+    tf.vertical_anchor = MSO_ANCHOR.TOP
+    p = tf.paragraphs[0]
+    p.alignment = PP_ALIGN.LEFT
+    run = p.add_run()
+    run.text = text
+    set_text_style(run, 20, PRIMARY, True)
+
+
 def rect_text(slide, x, y, w, h, text="", fill=WHITE, line=BORDER, size=16, color=BODY, bold=False):
     shape = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, inches(x), inches(y), inches(w), inches(h))
     shape.fill.solid()
@@ -187,6 +226,7 @@ def add_cover(slide, spec: dict) -> None:
 
 
 def add_toc(slide, items: list[str], toc_image: Path) -> None:
+    remove_top_title_placeholder(slide)
     slide.shapes.add_picture(str(toc_image), inches(0), inches(-0.006), width=inches(6.92), height=inches(7.506))
     box = slide.shapes.add_textbox(inches(7.653), inches(0.187), inches(4.899), inches(6.614))
     tf = box.text_frame
@@ -216,7 +256,7 @@ def add_content(slide, page: dict, section_num: str) -> None:
     lead = page.get("lead") or ""
     bullets = page.get("bullets") or []
     source = page.get("source") or ""
-    text_box(slide, 0.763, 0.276, 6.8, 0.50, f"{section_num}「{title}」", 20, PRIMARY, True)
+    set_title_placeholder(slide, f"{section_num}「{title}」")
     if lead:
         rect_text(slide, 0.763, 1.04, 12.107, 0.86, lead, fill=GRAY, line=GRAY, size=16, color=BODY, bold=True)
     y = 2.18
@@ -332,6 +372,14 @@ def load_spec(path: Path | None) -> dict:
     }
 
 
+def safe_output_name(spec: dict) -> str:
+    title = str(spec.get("title") or "金风科技汇报").strip()
+    cleaned = re.sub(r'[\\/:*?"<>|\r\n\t]+', "", title)
+    cleaned = re.sub(r"\s+", "", cleaned)
+    cleaned = cleaned[:36] or "金风科技汇报"
+    return f"{cleaned}.pptx"
+
+
 def build(spec: dict, output: Path, base: Path, toc_image: Path) -> Path:
     prs = Presentation(str(base))
     prs.slide_width = inches(SLIDE_W)
@@ -371,14 +419,9 @@ def main() -> int:
     args = parser.parse_args()
 
     spec = load_spec(args.spec)
-    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output = args.output or Path.cwd() / f"goldwind_native_deck_{stamp}.pptx"
+    output = args.output or Path.cwd() / safe_output_name(spec)
     build(spec, output, args.base, args.toc_image)
-    print("Goldwind native deck built")
-    print(f"- output: {output}")
-    print(f"- base: {args.base}")
-    print(f"- toc_image: {args.toc_image}")
-    print(f"- pages: {len(spec.get('pages') or []) + 3}")
+    print(f"Goldwind native deck built: {output}")
     return 0
 
 

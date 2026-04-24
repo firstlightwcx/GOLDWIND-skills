@@ -19,6 +19,8 @@ The dotted-wave assets are dimension-locked so the SVG finalizer cannot shrink t
 
 Explicit exclusions: `image5.png` from the imported PPTX is a content-specific simulation image and must not be treated as a reusable template asset. The imported wind/engineering figure is also not used by the cover or ending templates. The bottom-right three-stripe page-number block at `x=1204, y=620` is a misidentified non-template element and is forbidden.
 
+Final delivery contract: expose one and only one user-facing PPTX, named in Chinese from the deck title. QA decks, SVG fallback decks, preview images, scripts, and design documents are internal verification artifacts unless explicitly requested.
+
 ## II. Canvas Specification
 
 | Property | Value |
@@ -60,7 +62,7 @@ The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. 
 ## V. Page Structure
 
 - Shared master: white background, left vertical copyright rail, top-right logo. Do not add the bottom-right three-block page-number marker.
-- Content header: line from x=0 to x=328 at y=84, section number at x=84 y=66, quoted page/chapter title at x=138 y=66.
+- Content header: line from x=0 to x=328 at y=84; the native top title placeholder must be filled with `{{SECTION_NUM}}「{{PAGE_TITLE}}」`. Do not add a second title text box above it.
 - Cover/ending: large title block aligned near x=344 for cover and x=186 for ending, vertical blue accent bar near x=73, native background/wave layer in the lower half.
 - TOC: left full-height wind-turbine image plus right agenda list. Use `toc_wind_left.png` at `x=0, y=-0.006in, w=6.92in, h=7.506in`; right text box at `x=7.653in, y=0.187in, w=4.899in, h=6.614in`. Keep TOC to four primary entries only; do not add description rows or secondary explanatory lines on the TOC page.
 - Content pages: wide gray band beginning near x=76 y=112 plus optional table/tag structures.
@@ -101,6 +103,7 @@ The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. 
 | Cover/ending wave | `bottom_wave.png`, x=0, y=316, w=1280, h=390 |
 | TOC left image | `toc_wind_left.png`, x=0, y=-0.006in, w=6.92in, h=7.506in |
 | TOC text box | x=7.653in, y=0.187in, w=4.899in, h=6.614in |
+| Content title placeholder | x=0.763in, y=0.276in, w=6.8in, h=0.50in |
 
 ## IX. SVG Technical Constraints
 
@@ -111,6 +114,7 @@ The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. 
 - Keep placeholders visible and editable.
 - Do not rasterize any structural page as one full-page image. Ending-page text, rail, accent bar, logo, and wave/background must remain separate editable/native PPT elements.
 - For final `金风通用模板` delivery, build with `scripts/goldwind_native_deck.py` and validate with `scripts/goldwind_native_check.py` plus `scripts/pptx_visibility_check.py`.
+- `goldwind_native_check.py` must fail on duplicate content titles, unfilled top title placeholders, and unused TOC top title placeholders.
 
 ## X. Placeholder Specification
 

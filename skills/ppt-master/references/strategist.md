@@ -61,7 +61,9 @@ If the project uses a historical Goldwind PPT reference or the built-in `金风�
 7. The bottom-right three-stripe page-number block at `x=1204, y=620` is explicitly excluded from `金风通用模板`; do not include it in anchors, placeholders, or page mapping.
 8. Lock the background and rail anchors from the reference deck: dotted wave is a full-width layer for cover/ending and wave-background pages; the final PPTX side copyright rail must be a native rotated object (`x=-2.376in y=3.371in w=5.512in h=0.76in rotation=270`, `font-size=8`). SVG fallback may keep `matrix(0 -1.33 1.33 0 40.71 624.67)`, but the final Goldwind output must not rely on SVG matrix export.
 9. Keep the Goldwind TOC page to four primary entries only and use the native left-image layout: `toc_wind_left.png` at `x=0 y=-0.006in w=6.92in h=7.506in`, with the right text box at `x=7.653in y=0.187in w=4.899in h=6.614in`. Do not add subtitles/descriptions to TOC rows; those belong in chapter/content pages, not the reference TOC structure.
-10. Add native validation to the project test plan: `python3 scripts/goldwind_native_check.py <output.pptx>` and `python3 scripts/pptx_visibility_check.py <output.pptx>` are blocking final checks.
+10. Content-page titles must be planned as native top title placeholder values, not as extra overlay text boxes. Duplicate titles or visible placeholder prompt text are blocking defects.
+11. Lock final delivery packaging: expose exactly one PPTX with a Chinese filename derived from the deck title. QA decks, preview images, SVG decks, design docs, scripts, and logs are internal artifacts unless the user explicitly asks for them.
+12. Add native validation to the project test plan: `python3 scripts/goldwind_native_check.py <output.pptx>` and `python3 scripts/pptx_visibility_check.py <output.pptx>` are blocking final checks.
 
 ⛔ **BLOCKING**: After completing the read above, provide professional recommendations for the following eight items, then **present them as a bundled package to the user and wait for explicit confirmation or modifications**.
 
