@@ -129,6 +129,7 @@ Goldwind customization rule:
 | `${SKILL_DIR}/scripts/total_md_split.py` | Speaker notes splitting |
 | `${SKILL_DIR}/scripts/finalize_svg.py` | SVG post-processing (unified entry) |
 | `${SKILL_DIR}/scripts/svg_to_pptx.py` | Export to PPTX |
+| `${SKILL_DIR}/scripts/pptx_compat_export.py` | Export a raster compatibility PPTX via Chrome-rendered full-slide PNGs for WPS / older Office blank-slide fallback |
 | `${SKILL_DIR}/scripts/pptx_visibility_check.py` | Post-export PPTX blank-slide / missing-media check |
 | `${SKILL_DIR}/scripts/update_spec.py` | Propagate a `spec_lock.md` color / font_family change across all generated SVGs |
 
@@ -192,6 +193,7 @@ Hard mimic requirements:
 5. If `金风通用模板` is used, preserve its cover and ending contracts exactly: cover title/name/date only; ending page element structure is locked to `04_ending.svg`, while ending text uses current defaults unless the user asks to modify it. The ending page must stay editable and must not be delivered as one flattened image.
 6. Preserve the dotted wave background as a full-width template layer: cover/ending use `bottom_wave.png` at `x=0, y=316, w=1280, h=390`; TOC uses `toc_wave.png` at `x=0, y=120, w=1280, h=480`. Do not crop it to a left-side local decoration. Do not reuse the 1280x480 TOC wave in the 1280x390 lower-wave box, because `finalize_svg.py` can otherwise shrink it to 1040px wide during aspect-ratio fitting.
 7. Preserve the left rail copyright text at the imported anchor `matrix(0 -1.33 1.33 0 40.71 624.67)` with `font-size=8`; do not approximate it with a shifted rotated text box.
+8. Preserve the TOC page as a four-item primary agenda only: no description rows, no secondary explanatory lines. Match the historical reference anchors (`目录` x=736 y=184; item baselines y=251/326/401/475; numbers x=736; item titles x=784).
 
 If the reference is screenshots or images rather than PPTX, preserve them as style evidence and summarize visible style cues before Step 4.
 

@@ -59,6 +59,7 @@ If the project uses a historical Goldwind PPT reference or the built-in `金风�
 5. Do not promote content-specific figures from the reference deck as template assets. In particular, the simulation/arrow figure is excluded.
 6. The bottom-right three-stripe page-number block at `x=1204, y=620` is explicitly excluded from `金风通用模板`; do not include it in anchors, placeholders, or page mapping.
 7. Lock the dotted wave and rail anchors from the reference deck: wave is a full-width layer (`cover/ending: bottom_wave.png at x=0 y=316 w=1280 h=390`; `TOC: toc_wave.png at x=0 y=120 w=1280 h=480`), and the left copyright rail uses `matrix(0 -1.33 1.33 0 40.71 624.67)` with `font-size=8`.
+8. Keep the Goldwind TOC page to four primary entries only. Do not add subtitles/descriptions to TOC rows; those belong in chapter/content pages, not the reference TOC structure.
 
 ⛔ **BLOCKING**: After completing the read above, provide professional recommendations for the following eight items, then **present them as a bundled package to the user and wait for explicit confirmation or modifications**.
 

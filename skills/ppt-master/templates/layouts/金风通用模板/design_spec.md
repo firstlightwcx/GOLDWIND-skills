@@ -60,7 +60,7 @@ The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. 
 - Shared master: white background, left vertical copyright rail, top-right logo. Do not add the bottom-right three-block page-number marker.
 - Content header: line from x=0 to x=328 at y=84, section number at x=84 y=66, quoted page/chapter title at x=138 y=66.
 - Cover/ending: large title block aligned near x=344 for cover and x=186 for ending, vertical blue accent bar near x=73, full-width dotted wave layer in the lower half.
-- TOC: full-width dotted wave layer (`x=0, y=120, w=1280, h=480`) behind the page, agenda list on right starting near x=736.
+- TOC: full-width dotted wave layer (`x=0, y=120, w=1280, h=480`) behind the page, agenda list on right starting near x=736. Keep TOC to four primary entries only; do not add description rows or secondary explanatory lines on the TOC page.
 - Content pages: wide gray band beginning near x=76 y=112 plus optional table/tag structures.
 - Left rail copyright: lock the original imported anchor `matrix(0 -1.33 1.33 0 40.71 624.67)`, `font-size=8`; do not approximate it with a rotated text box at another coordinate.
 
@@ -69,7 +69,7 @@ The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. 
 | File | Purpose | Required Placeholders |
 | --- | --- | --- |
 | `01_cover.svg` | Cover | `{{TITLE}}`, `{{AUTHOR}}`, `{{DATE}}` |
-| `02_toc.svg` | Table of contents | `{{TOC_ITEM_1_TITLE}}` ... `{{TOC_ITEM_4_DESC}}` |
+| `02_toc.svg` | Table of contents | `{{TOC_ITEM_1_TITLE}}` ... `{{TOC_ITEM_4_TITLE}}` |
 | `02_chapter.svg` | Chapter opener | `{{CHAPTER_NUM}}`, `{{CHAPTER_TITLE}}`, `{{CHAPTER_DESC}}` |
 | `03_content.svg` | Content page | `{{SECTION_NUM}}`, `{{PAGE_TITLE}}`, `{{CONTENT_AREA}}`, `{{SOURCE}}` |
 | `04_ending.svg` | Ending | Editable element structure; default text may be changed on user request |
@@ -113,4 +113,4 @@ Use the canonical placeholder contract:
 - Chapter: `{{CHAPTER_NUM}}`, `{{CHAPTER_TITLE}}`, `{{CHAPTER_DESC}}`
 - Content: `{{SECTION_NUM}}`, `{{PAGE_TITLE}}`, `{{CONTENT_AREA}}`, `{{SOURCE}}`
 - Ending: current template text is the default value only. If the user asks to change it, replace the visible editable text while preserving the same element positions, typography scale, and visual hierarchy. Do not flatten the ending page into a screenshot or single image.
-- TOC: `{{TOC_ITEM_1_TITLE}}`, `{{TOC_ITEM_1_DESC}}` through item 4
+- TOC: `{{TOC_ITEM_1_TITLE}}` through `{{TOC_ITEM_4_TITLE}}` only. Match the historical reference coordinates: title at x=736 y=184; row baselines at y=251, 326, 401, 475; number x=736; item title x=784.

@@ -36,6 +36,17 @@ ENDING_TEXT_ANCHORS = {
     "ending second CN line x=188 y=426": r'<text[^>]+x="188"[^>]+y="426"',
     "ending second EN line x=188 y=466": r'<text[^>]+x="188"[^>]+y="466"',
 }
+TOC_TEXT_ANCHORS = {
+    "TOC title x=736 y=184": r'<text[^>]+x="736"[^>]+y="184"[^>]*>目录</text>',
+    "TOC row 1 number x=736 y=251": r'<text[^>]+x="736"[^>]+y="251"[^>]*>1\.</text>',
+    "TOC row 1 title x=784 y=251": r'<text[^>]+x="784"[^>]+y="251"',
+    "TOC row 2 number x=736 y=326": r'<text[^>]+x="736"[^>]+y="326"[^>]*>2\.</text>',
+    "TOC row 2 title x=784 y=326": r'<text[^>]+x="784"[^>]+y="326"',
+    "TOC row 3 number x=736 y=401": r'<text[^>]+x="736"[^>]+y="401"[^>]*>3\.</text>',
+    "TOC row 3 title x=784 y=401": r'<text[^>]+x="784"[^>]+y="401"',
+    "TOC row 4 number x=736 y=475": r'<text[^>]+x="736"[^>]+y="475"[^>]*>4\.</text>',
+    "TOC row 4 title x=784 y=475": r'<text[^>]+x="784"[^>]+y="475"',
+}
 
 
 def read_text(path: Path) -> str:
@@ -155,6 +166,16 @@ def check_ending_structure(svg_name: str, svg: str, errors: list[str]) -> None:
     check_no_fullpage_raster(svg_name, svg, errors)
 
 
+def check_toc_structure(svg_name: str, svg: str, errors: list[str]) -> None:
+    for label, pattern in TOC_TEXT_ANCHORS.items():
+        if not contains_exact_anchor(svg, pattern):
+            errors.append(f"{svg_name}: missing anchor: {label}")
+    if "TOC_ITEM_1_DESC" in svg or re.search(r'TOC_ITEM_\d+_DESC', svg):
+        errors.append(f"{svg_name}: TOC description placeholders are forbidden in 金风通用模板")
+    if len(re.findall(r'<text\b', svg)) > 10:
+        errors.append(f"{svg_name}: TOC must keep the historical four-entry agenda structure without description rows")
+
+
 def check_no_legacy_page_marker(svg_name: str, svg: str, errors: list[str]) -> None:
     for label, pattern in FORBIDDEN_PAGE_MARKER_PATTERNS.items():
         if contains_exact_anchor(svg, pattern):
@@ -190,6 +211,7 @@ def check_content_templates(template_dir: Path, errors: list[str]) -> None:
             check_shared_anchors(name, svg, errors)
             if name == "02_toc.svg":
                 check_wave_anchor(name, svg, errors, "toc")
+                check_toc_structure(name, svg, errors)
     content = read_text(template_dir / "03_content.svg")
     for token in ("{{SECTION_NUM}}", "{{PAGE_TITLE}}", "{{CONTENT_AREA}}"):
         if token not in content:

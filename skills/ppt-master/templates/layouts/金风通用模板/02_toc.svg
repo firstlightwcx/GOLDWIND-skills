@@ -6,16 +6,12 @@
   <text xml:space="preserve" transform="matrix(0 -1.33 1.33 0 40.71 624.67)" font-family="Arial, Microsoft YaHei, sans-serif" font-size="8" fill="#515151" y="0" x="0">© GOLDWIND SCIENCE &amp; TECHNOLOGY CO., LTD.</text>
   <image x="0" y="120" width="1280" height="480" xlink:href="toc_wave.png" preserveAspectRatio="xMidYMid slice"/>
   <text x="736" y="184" font-family="Arial, Microsoft YaHei, sans-serif" font-size="38" font-weight="bold" fill="#515151">目录</text>
-  <text x="736" y="260" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#515151">1.</text>
-  <text x="784" y="260" font-family="Arial, Microsoft YaHei, sans-serif" font-size="27" font-weight="bold" fill="#515151">{{TOC_ITEM_1_TITLE}}</text>
-  <text x="784" y="288" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15" fill="#848484">{{TOC_ITEM_1_DESC}}</text>
-  <text x="736" y="334" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#515151">2.</text>
-  <text x="784" y="334" font-family="Arial, Microsoft YaHei, sans-serif" font-size="27" font-weight="bold" fill="#515151">{{TOC_ITEM_2_TITLE}}</text>
-  <text x="784" y="362" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15" fill="#848484">{{TOC_ITEM_2_DESC}}</text>
-  <text x="736" y="408" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#515151">3.</text>
-  <text x="784" y="408" font-family="Arial, Microsoft YaHei, sans-serif" font-size="27" font-weight="bold" fill="#515151">{{TOC_ITEM_3_TITLE}}</text>
-  <text x="784" y="436" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15" fill="#848484">{{TOC_ITEM_3_DESC}}</text>
-  <text x="736" y="482" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#515151">4.</text>
-  <text x="784" y="482" font-family="Arial, Microsoft YaHei, sans-serif" font-size="27" font-weight="bold" fill="#515151">{{TOC_ITEM_4_TITLE}}</text>
-  <text x="784" y="510" font-family="Microsoft YaHei, Arial, sans-serif" font-size="15" fill="#848484">{{TOC_ITEM_4_DESC}}</text>
+  <text x="736" y="251" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#515151">1.</text>
+  <text x="784" y="251" font-family="Arial, Microsoft YaHei, sans-serif" font-size="27" font-weight="bold" fill="#515151">{{TOC_ITEM_1_TITLE}}</text>
+  <text x="736" y="326" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#515151">2.</text>
+  <text x="784" y="326" font-family="Arial, Microsoft YaHei, sans-serif" font-size="27" font-weight="bold" fill="#515151">{{TOC_ITEM_2_TITLE}}</text>
+  <text x="736" y="401" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#515151">3.</text>
+  <text x="784" y="401" font-family="Arial, Microsoft YaHei, sans-serif" font-size="27" font-weight="bold" fill="#515151">{{TOC_ITEM_3_TITLE}}</text>
+  <text x="736" y="475" font-family="Arial, Microsoft YaHei, sans-serif" font-size="18" font-weight="bold" fill="#515151">4.</text>
+  <text x="784" y="475" font-family="Arial, Microsoft YaHei, sans-serif" font-size="27" font-weight="bold" fill="#515151">{{TOC_ITEM_4_TITLE}}</text>
 </svg>
