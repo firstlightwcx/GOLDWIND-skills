@@ -190,7 +190,7 @@ Hard mimic requirements:
 3. Only promote true reusable template elements. Content-specific figures, including the simulation/arrow figure previously misidentified from the 2024 work-planning deck, MUST NOT be treated as template assets.
 4. For `金风通用模板`, the bottom-right three-stripe page-number block (`x=1204, y=620, w=76, h=60`) is a forbidden non-template artifact. Do not generate it on any page.
 5. If `金风通用模板` is used, preserve its cover and ending contracts exactly: cover title/name/date only; ending page element structure is locked to `04_ending.svg`, while ending text uses current defaults unless the user asks to modify it. The ending page must stay editable and must not be delivered as one flattened image.
-6. Preserve the dotted wave background as a full-width template layer: cover/ending use `x=0, y=316, w=1280, h=390`; TOC uses `x=0, y=120, w=1280, h=480`. Do not crop it to a left-side local decoration.
+6. Preserve the dotted wave background as a full-width template layer: cover/ending use `bottom_wave.png` at `x=0, y=316, w=1280, h=390`; TOC uses `toc_wave.png` at `x=0, y=120, w=1280, h=480`. Do not crop it to a left-side local decoration. Do not reuse the 1280x480 TOC wave in the 1280x390 lower-wave box, because `finalize_svg.py` can otherwise shrink it to 1040px wide during aspect-ratio fitting.
 7. Preserve the left rail copyright text at the imported anchor `matrix(0 -1.33 1.33 0 40.71 624.67)` with `font-size=8`; do not approximate it with a shifted rotated text box.
 
 If the reference is screenshots or images rather than PPTX, preserve them as style evidence and summarize visible style cues before Step 4.

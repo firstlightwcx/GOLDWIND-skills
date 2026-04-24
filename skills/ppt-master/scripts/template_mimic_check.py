@@ -20,6 +20,7 @@ REQUIRED_TEMPLATE_FILES = {
     "design_spec.md",
     "logo.png",
     "toc_wave.png",
+    "bottom_wave.png",
 }
 FORBIDDEN_TEMPLATE_ASSETS = {"image5.png", "cover_wind.jpg"}
 FORBIDDEN_PAGE_MARKER_PATTERNS = {
@@ -83,6 +84,28 @@ def check_required_files(template_dir: Path, errors: list[str]) -> None:
     present_forbidden = sorted(name for name in FORBIDDEN_TEMPLATE_ASSETS if (template_dir / name).exists())
     if present_forbidden:
         errors.append(f"forbidden non-template assets present: {', '.join(present_forbidden)}")
+    check_png_dimensions(template_dir / "toc_wave.png", 1280, 480, errors)
+    check_png_dimensions(template_dir / "bottom_wave.png", 1280, 390, errors)
+
+
+def check_png_dimensions(path: Path, expected_width: int, expected_height: int, errors: list[str]) -> None:
+    if not path.exists():
+        return
+    try:
+        data = path.read_bytes()
+    except OSError as exc:
+        errors.append(f"cannot read PNG asset {path.name}: {exc}")
+        return
+    if data[:8] != b"\x89PNG\r\n\x1a\n" or len(data) < 24:
+        errors.append(f"{path.name}: expected PNG asset")
+        return
+    width = int.from_bytes(data[16:20], "big")
+    height = int.from_bytes(data[20:24], "big")
+    if (width, height) != (expected_width, expected_height):
+        errors.append(
+            f"{path.name}: expected {expected_width}x{expected_height}, got {width}x{height}; "
+            "wave assets must match SVG boxes to prevent finalize-time shrinking"
+        )
 
 
 def check_shared_anchors(svg_name: str, svg: str, errors: list[str]) -> None:
@@ -103,7 +126,7 @@ def check_wave_anchor(svg_name: str, svg: str, errors: list[str], variant: str) 
         pattern = r'<image[^>]+x="0"[^>]+y="120"[^>]+width="1280"[^>]+height="480"[^>]+toc_wave\.png'
         label = "full-width TOC dotted wave at x=0 y=120 w=1280 h=480"
     else:
-        pattern = r'<image[^>]+x="0"[^>]+y="316"[^>]+width="1280"[^>]+height="390"[^>]+toc_wave\.png'
+        pattern = r'<image[^>]+x="0"[^>]+y="316"[^>]+width="1280"[^>]+height="390"[^>]+bottom_wave\.png'
         label = "full-width lower dotted wave at x=0 y=316 w=1280 h=390"
     if not contains_exact_anchor(svg, pattern):
         errors.append(f"{svg_name}: missing anchor: {label}")
@@ -185,7 +208,7 @@ def check_project_outputs(project_dir: Path, errors: list[str]) -> None:
         check_no_legacy_page_marker(svg_path.name, read_text(svg_path), errors)
     first = read_text(svgs[0])
     last = read_text(svgs[-1])
-    if "toc_wave.png" not in first and "reference_toc_wave.png" not in first:
+    if "bottom_wave.png" not in first and "toc_wave.png" not in first and "reference_toc_wave.png" not in first:
         errors.append(f"{svgs[0].name}: first slide must keep Goldwind dotted wave cover structure")
     check_ending_structure(svgs[-1].name, last, errors)
 

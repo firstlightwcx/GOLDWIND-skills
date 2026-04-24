@@ -58,7 +58,7 @@ If the project uses a historical Goldwind PPT reference or the built-in `金风�
 4. Lock first/last page behavior for `金风通用模板`: cover text may vary only by title, author/name, and date; if no user title is provided, auto-generate it from source content. Ending-page structure must match `04_ending.svg` as editable elements; the default ending copy may be changed only when the user requests different wording.
 5. Do not promote content-specific figures from the reference deck as template assets. In particular, the simulation/arrow figure is excluded.
 6. The bottom-right three-stripe page-number block at `x=1204, y=620` is explicitly excluded from `金风通用模板`; do not include it in anchors, placeholders, or page mapping.
-7. Lock the dotted wave and rail anchors from the reference deck: wave is a full-width layer (`cover/ending: x=0 y=316 w=1280 h=390`; `TOC: x=0 y=120 w=1280 h=480`), and the left copyright rail uses `matrix(0 -1.33 1.33 0 40.71 624.67)` with `font-size=8`.
+7. Lock the dotted wave and rail anchors from the reference deck: wave is a full-width layer (`cover/ending: bottom_wave.png at x=0 y=316 w=1280 h=390`; `TOC: toc_wave.png at x=0 y=120 w=1280 h=480`), and the left copyright rail uses `matrix(0 -1.33 1.33 0 40.71 624.67)` with `font-size=8`.
 
 ⛔ **BLOCKING**: After completing the read above, provide professional recommendations for the following eight items, then **present them as a bundled package to the user and wait for explicit confirmation or modifications**.
 

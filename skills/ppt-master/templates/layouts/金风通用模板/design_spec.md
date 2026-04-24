@@ -13,6 +13,8 @@
 
 This template is reconstructed from the Goldwind 2024 work-planning deck. It is a reusable PPT Master layout package, not a full slide conversion. The reusable visual authority is limited to the true template elements: top-right Goldwind logo, left copyright rail, full-width dotted wave artwork, header/title structure, gray content bands, and teal table/tag blocks.
 
+The dotted-wave assets are dimension-locked so the SVG finalizer cannot shrink them by aspect-ratio fitting: `bottom_wave.png` is 1280x390 for cover/ending pages, and `toc_wave.png` is 1280x480 for TOC pages.
+
 Explicit exclusions: `image5.png` from the imported PPTX is a content-specific simulation image and must not be treated as a reusable template asset. The imported wind/engineering figure is also not used by the cover or ending templates. The bottom-right three-stripe page-number block at `x=1204, y=620` is a misidentified non-template element and is forbidden.
 
 ## II. Canvas Specification
@@ -91,8 +93,8 @@ The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. 
 | Content band | x=76, y=112, w=1140 |
 | Footer source | x=84, y=700 |
 | Forbidden marker | No gray/white/gray block at x=1204, y=620 |
-| Cover/ending wave | x=0, y=316, w=1280, h=390 |
-| TOC wave | x=0, y=120, w=1280, h=480 |
+| Cover/ending wave | `bottom_wave.png`, x=0, y=316, w=1280, h=390 |
+| TOC wave | `toc_wave.png`, x=0, y=120, w=1280, h=480 |
 
 ## IX. SVG Technical Constraints
 
