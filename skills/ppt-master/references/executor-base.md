@@ -16,6 +16,16 @@ If template files exist in the project's `templates/` directory, the template st
 | Ending | `04_ending.svg` | Inherit background, thank-you message position, contact info layout |
 | TOC | `02_toc.svg` | **Optional**: Inherit TOC title, list styles |
 
+### Goldwind Hard-Mimic Rules
+
+When the selected template is `金风通用模板` or the project uses a historical Goldwind PPT reference:
+
+- Follow the template's fixed coordinates for the top-right logo, left copyright rail, bottom-right page-number block, header line, section number, and quoted page title.
+- Cover page text may vary only by `TITLE`, `AUTHOR`, and `DATE`. Use a user-provided title when available; otherwise generate one from the source material. Do not add or expose extra cover text placeholders.
+- Ending page text is fixed. Do not change, translate, summarize, rewrite, or parameterize any ending-page text.
+- Use dotted wave artwork for cover/TOC/ending pages. Do not use the content-specific simulation/arrow figure or unrelated wind/engineering images as reusable template assets.
+- After SVG generation and before notes/export, run `python3 scripts/template_mimic_check.py <project_path> --tolerance 0` and fix any failure.
+
 ### Page-Template Mapping Declaration (Required Output)
 
 Before generating each page, you must explicitly output which template (or "free design") is used:

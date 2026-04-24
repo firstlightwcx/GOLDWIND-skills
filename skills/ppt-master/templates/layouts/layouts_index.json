@@ -29,6 +29,11 @@
     "summary": "A Google-branded template for annual reports and technical sharing",
     "keywords": ["Google", "Brand style", "Technical sharing", "Annual report"]
   },
+  "金风通用模板": {
+    "label": "金风通用模板",
+    "summary": "A Goldwind internal reporting template reconstructed from the 2024 work-planning deck, with fixed ending page and editable cover title/name/date only",
+    "keywords": ["Goldwind", "金风科技", "工作策划", "内部汇报", "年度策划"]
+  },
   "government_blue": {
     "label": "Government Blue Template",
     "summary": "A blue government-themed template for smart governance and digital transformation reports",

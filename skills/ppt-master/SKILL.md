@@ -27,6 +27,7 @@ description: >
 > 6. **NO SUB-AGENT SVG GENERATION** — Executor Step 6 SVG generation is context-dependent and MUST be completed by the current main agent end-to-end. Delegating page SVG generation to sub-agents is FORBIDDEN
 > 7. **SEQUENTIAL PAGE GENERATION ONLY** — In Executor Step 6, after the global design context is confirmed, SVG pages MUST be generated sequentially page by page in one continuous pass. Grouped page batches (for example, 5 pages at a time) are FORBIDDEN
 > 8. **SPEC_LOCK RE-READ PER PAGE** — Before generating each SVG page, Executor MUST `read_file <project_path>/spec_lock.md`. All colors / fonts / icons / images MUST come from this file — no values from memory or invented on the fly. Executor MUST also look up the current page's `page_rhythm` tag and apply the matching layout discipline (`anchor` / `dense` / `breathing` — see executor-base.md §2.1). This rule exists to resist context-compression drift on long decks and to break the uniform "every page is a card grid" default
+> 9. **GOLDWIND TEMPLATE MIMIC FIRST** — When a historical Goldwind PPT or `金风通用模板` is provided/selected, template extraction, reference-SVG reading, coordinate/title/font anchor locking, and template-mimic validation MUST happen before content design or SVG generation. Skipping this is a workflow failure.
 
 > [!IMPORTANT]
 > ## 🌐 Language & Communication Rule
@@ -106,6 +107,9 @@ Goldwind customization rule:
 - Do not default to generic free design when a Goldwind historical PPT is available.
 - Extract and summarize the historical PPT style before writing the project `design_spec.md`.
 - The extracted style should guide colors, typography, page rhythm, header/footer treatment, logo placement, decorative motifs, chart styling, and image usage.
+- If the user explicitly says `金风通用模板`, `工作策划模板`, or asks to use the 2024 work-planning style as a reusable template, select the built-in optional template `金风通用模板`.
+- For `金风通用模板`, the cover page has only three dynamic text slots: `{{TITLE}}`, `{{AUTHOR}}`, and `{{DATE}}`. Use a user-provided title when present; otherwise auto-generate a title from the source material. Do not ask the user to edit any other cover text.
+- For `金风通用模板`, the ending page is fixed text and MUST NOT be changed, translated, summarized, parameterized, or regenerated.
 
 ## Main Pipeline Scripts
 
@@ -120,6 +124,7 @@ Goldwind customization rule:
 | `${SKILL_DIR}/scripts/analyze_images.py` | Image analysis |
 | `${SKILL_DIR}/scripts/image_gen.py` | AI image generation (multi-provider) |
 | `${SKILL_DIR}/scripts/svg_quality_checker.py` | SVG quality check |
+| `${SKILL_DIR}/scripts/template_mimic_check.py` | Goldwind template-mimic gate check |
 | `${SKILL_DIR}/scripts/total_md_split.py` | Speaker notes splitting |
 | `${SKILL_DIR}/scripts/finalize_svg.py` | SVG post-processing (unified entry) |
 | `${SKILL_DIR}/scripts/svg_to_pptx.py` | Export to PPTX |
@@ -175,6 +180,13 @@ Use the generated import package as the primary style evidence:
 - `analysis.md` for page-type and content-pattern hints
 - `reference_svg_selection.json` and selected `svg/slide_*.svg` files for page rhythm, spacing, and visual motifs
 - extracted `assets/` for reusable logos, backgrounds, and brand imagery
+
+Hard mimic requirements:
+
+1. Read every SVG file listed in `reference_svg_selection.json` before writing `design_spec.md`.
+2. Produce a project-level template mimic contract in `design_spec.md` (or a companion `<project_path>/template_mimic.md`) covering page-type mapping, title hierarchy, font plan, logo coordinates, left copyright rail, page-number block, cover/TOC/ending structure, and reusable asset exclusions.
+3. Only promote true reusable template elements. Content-specific figures, including the simulation/arrow figure previously misidentified from the 2024 work-planning deck, MUST NOT be treated as template assets.
+4. If `金风通用模板` is used, preserve its cover and ending contracts exactly: cover title/name/date only; ending page fixed text only.
 
 If the reference is screenshots or images rather than PPTX, preserve them as style evidence and summarize visible style cues before Step 4.
 
@@ -243,9 +255,19 @@ Only when a trigger fires: read `${SKILL_DIR}/templates/layouts/layouts_index.js
 ```bash
 cp ${SKILL_DIR}/templates/layouts/<template_name>/*.svg <project_path>/templates/
 cp ${SKILL_DIR}/templates/layouts/<template_name>/design_spec.md <project_path>/templates/
+cp ${SKILL_DIR}/templates/layouts/<template_name>/*.png <project_path>/templates/ 2>/dev/null || true
+cp ${SKILL_DIR}/templates/layouts/<template_name>/*.jpg <project_path>/templates/ 2>/dev/null || true
 cp ${SKILL_DIR}/templates/layouts/<template_name>/*.png <project_path>/images/ 2>/dev/null || true
 cp ${SKILL_DIR}/templates/layouts/<template_name>/*.jpg <project_path>/images/ 2>/dev/null || true
 ```
+
+When `<template_name>` is `金风通用模板`, immediately run:
+
+```bash
+python3 ${SKILL_DIR}/scripts/template_mimic_check.py "${SKILL_DIR}/templates/layouts/金风通用模板" --tolerance 0
+```
+
+The check must pass before Step 4.
 
 **Soft hint (non-blocking, optional).** Before Step 4, if the user's content is an obvious strong match for an existing template (e.g., clearly an academic defense, a government report, a McKinsey-style consulting deck) AND the user has given no template signal, the AI MAY emit a single-sentence notice and continue without waiting:
 
@@ -293,6 +315,7 @@ python3 ${SKILL_DIR}/scripts/analyze_images.py <project_path>/images
 **Output**:
 - `<project_path>/design_spec.md` — human-readable design narrative
 - `<project_path>/spec_lock.md` — machine-readable execution contract (distilled from the decisions in design_spec.md; Executor re-reads this before every page). See `templates/spec_lock_reference.md` for the skeleton.
+- If a historical PPT or `金风通用模板` is used, the design spec / lock MUST record template mimic anchors and page mapping before generation.
 
 **✅ Checkpoint — Phase deliverables complete, auto-proceed to next step**:
 ```markdown
@@ -360,6 +383,14 @@ python3 ${SKILL_DIR}/scripts/svg_quality_checker.py <project_path>
 - Any `error` (banned SVG features, viewBox mismatch, spec_lock drift, etc.) MUST be fixed on the offending page before proceeding — go back to Visual Construction, re-generate that page, re-run the check.
 - `warning` entries (e.g., low-resolution image, non-PPT-safe font tail) should be reviewed and fixed when straightforward; may be acknowledged and released otherwise.
 - Running the checker against `svg_output/` is required — running it only after `finalize_svg.py` is too late (finalize rewrites SVG and some violations get masked).
+
+If `金风通用模板` or a Goldwind historical reference is used, also run:
+
+```bash
+python3 ${SKILL_DIR}/scripts/template_mimic_check.py <project_path> --tolerance 0
+```
+
+Any failure must be fixed before speaker notes or export.
 
 **Logic Construction Phase**:
 - Generate speaker notes → `<project_path>/notes/total.md`

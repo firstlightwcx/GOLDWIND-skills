@@ -1,4 +1,4 @@
-# Page Layout Template Library (21 Templates)
+# Page Layout Template Library (22 Templates)
 
 Pre-built PPT page layout templates supporting multiple styles and use cases.
 
@@ -16,6 +16,7 @@ Pre-built PPT page layout templates supporting multiple styles and use cases.
 | `google_style` | Brand | Annual reports, tech sharing, data presentation | Google Four Colors `#4285F4` `#EA4335` `#FBBC04` `#34A853` | Modern clean, data-driven, ample whitespace |
 | `mckinsey` | Brand | Strategic consulting, executive reports, investment analysis | McKinsey Blue `#005587` | Structured thinking, minimalist premium, MECE principle |
 | `anthropic` | Brand | AI tech sharing, developer conferences, product launches | Anthropic Orange `#D97757` | Tech-forward, conclusion-first, dark cover |
+| `金风通用模板` | Brand | Goldwind internal reports, work planning, annual planning, technical department briefings | Goldwind Blue `#063360` | Restrained, engineering-oriented, dotted wave cover/ending, fixed final page |
 | `china_telecom_template` | Brand | Telecom solutions, digital transformation plans,政企汇报 | Telecom Red `#C00000` | Restrained, authoritative, telecom enterprise style |
 | `中汽研_常规` | Brand | Product certification, evaluation & testing | Deep Blue `#004098` | [Standard] Professional authority, consulting style |
 | `中汽研_商务` | Brand | Business visits, technical exchanges | Blue Gradient `#003366` | [Business] Modern tech, composed and sophisticated |
@@ -48,6 +49,7 @@ Templates mimicking **specific well-known brands/institutions** with their exclu
 | `google_style` | Google Material Design style, four-color brand identity |
 | `mckinsey` | McKinsey consulting style, data-driven and structured |
 | `anthropic` | Anthropic AI style, dark tech-forward aesthetic |
+| `金风通用模板` | Goldwind internal reporting style reconstructed from the 2024 work-planning deck; cover allows title/name/date only and ending page text is fixed |
 | `china_telecom_template` | China Telecom brand style, red-gray structural header + ribbon footer |
 | `中汽研_常规` | CATARC standard style (v1), suitable for certification and evaluation |
 | `中汽研_商务` | CATARC business style (v2), modern tech business, composed and sophisticated |

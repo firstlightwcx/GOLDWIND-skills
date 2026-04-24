@@ -48,6 +48,16 @@ read_file templates/design_spec_reference.md
 ```
 The design_spec.md output **MUST** follow this template's structure exactly (Sections I through XI). After writing, perform a section-by-section self-check: I Project Information ✓ → II Canvas Spec ✓ → III Visual Theme ✓ → IV Typography ✓ → V Layout Principles ✓ → VI Icon Usage ✓ → VII Visualization Reference List ✓ → VIII Image Resource List ✓ → IX Content Outline ✓ → X Speaker Notes Requirements ✓ → XI Technical Constraints Reminder ✓. Any missing section must be completed before outputting the file.
 
+### Goldwind Template Mimic Gate
+
+If the project uses a historical Goldwind PPT reference or the built-in `金风通用模板`, template mimicry is a hard precondition for the design spec:
+
+1. Confirm that `pptx_template_import.py` has been run for any historical PPTX reference.
+2. Read every SVG listed in `reference_svg_selection.json` before writing `design_spec.md`.
+3. Add a template-mimic contract to the design spec covering page-type mapping, exact reusable anchors, title hierarchy, fonts, and excluded non-template assets.
+4. Lock first/last page behavior for `金风通用模板`: cover text may vary only by title, author/name, and date; if no user title is provided, auto-generate it from source content. Ending-page text is fixed and must not be changed.
+5. Do not promote content-specific figures from the reference deck as template assets. In particular, the simulation/arrow figure is excluded.
+
 ⛔ **BLOCKING**: After completing the read above, provide professional recommendations for the following eight items, then **present them as a bundled package to the user and wait for explicit confirmation or modifications**.
 
 > **Execution discipline**: This is the last BLOCKING checkpoint in the pipeline (besides template selection). Once the user confirms, the AI must automatically complete the Design Specification & Content Outline and seamlessly proceed to subsequent image generation (if applicable), SVG generation, and post-processing — no additional questions or pauses in between.
