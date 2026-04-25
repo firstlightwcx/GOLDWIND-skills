@@ -42,6 +42,31 @@ def text_of(shape) -> str:
     return shape.text.replace("\n", " ").strip()
 
 
+def shape_box(shape) -> tuple[float, float, float, float]:
+    return (inch(shape.left), inch(shape.top), inch(shape.width), inch(shape.height))
+
+
+def overlap_area(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> float:
+    ax, ay, aw, ah = a
+    bx, by, bw, bh = b
+    left = max(ax, bx)
+    right = min(ax + aw, bx + bw)
+    top = max(ay, by)
+    bottom = min(ay + ah, by + bh)
+    if right <= left or bottom <= top:
+        return 0.0
+    return (right - left) * (bottom - top)
+
+
+def is_generated_text_shape(shape) -> bool:
+    text = text_of(shape)
+    if not text:
+        return False
+    if COPYRIGHT in text.upper():
+        return False
+    return True
+
+
 def fail(errors: list[str], message: str) -> None:
     errors.append(message)
 
@@ -155,6 +180,30 @@ def check_content_titles(prs: Presentation, errors: list[str]) -> None:
             fail(errors, f"Slide {index} top title placeholder is not filled; WPS may show placeholder prompt text.")
 
 
+def check_text_bounds_and_overlap(prs: Presentation, errors: list[str]) -> None:
+    """Catch common WPS failures: duplicate/stacked text and off-slide objects."""
+    for slide_zero_idx in range(2, len(prs.slides) - 1):
+        index = slide_zero_idx + 1
+        slide = prs.slides[slide_zero_idx]
+        boxes: list[tuple[str, tuple[float, float, float, float]]] = []
+        for shape in slide.shapes:
+            if not is_generated_text_shape(shape):
+                continue
+            x, y, w, h = shape_box(shape)
+            label = text_of(shape)[:28]
+            if x < -0.03 or y < -0.03 or x + w > EXPECTED_W + 0.03 or y + h > EXPECTED_H + 0.03:
+                fail(errors, f"Slide {index} text box out of bounds: {label!r} at x={x:.3f}, y={y:.3f}, w={w:.3f}, h={h:.3f}.")
+            boxes.append((label, (x, y, w, h)))
+        for a_idx, (a_label, a_box) in enumerate(boxes):
+            for b_label, b_box in boxes[a_idx + 1 :]:
+                area = overlap_area(a_box, b_box)
+                if area <= 0.025:
+                    continue
+                smaller = min(a_box[2] * a_box[3], b_box[2] * b_box[3])
+                if smaller and area / smaller > 0.12:
+                    fail(errors, f"Slide {index} has overlapping text: {a_label!r} and {b_label!r}.")
+
+
 def check(path: Path) -> list[str]:
     errors: list[str] = []
     if not path.exists():
@@ -169,6 +218,7 @@ def check(path: Path) -> list[str]:
     check_toc(prs, errors)
     check_horizontal_copyright(prs, errors)
     check_content_titles(prs, errors)
+    check_text_bounds_and_overlap(prs, errors)
     return errors
 
 

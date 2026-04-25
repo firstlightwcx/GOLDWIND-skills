@@ -111,10 +111,25 @@ def set_text_style(run, size: float, color=BODY, bold: bool = False, font: str =
     run.font.color.rgb = color
 
 
+def display_len(text: str) -> float:
+    """Approximate visual length for adaptive PPT-safe font sizing."""
+    return sum(1.7 if ord(ch) > 127 else 1.0 for ch in str(text))
+
+
+def adaptive_size(text: str, base: float, minimum: float, steps: tuple[tuple[float, float], ...]) -> float:
+    length = display_len(text)
+    size = base
+    for threshold, decrement in steps:
+        if length > threshold:
+            size -= decrement
+    return max(minimum, size)
+
+
 def text_box(slide, x, y, w, h, text="", size=18, color=BODY, bold=False, align=PP_ALIGN.LEFT):
     shape = slide.shapes.add_textbox(inches(x), inches(y), inches(w), inches(h))
     tf = shape.text_frame
     tf.clear()
+    tf.word_wrap = True
     tf.margin_left = 0
     tf.margin_right = 0
     tf.margin_top = 0
@@ -173,6 +188,7 @@ def rect_text(slide, x, y, w, h, text="", fill=WHITE, line=BORDER, size=16, colo
     shape.line.color.rgb = line
     tf = shape.text_frame
     tf.clear()
+    tf.word_wrap = True
     tf.margin_left = inches(0.16)
     tf.margin_right = inches(0.16)
     tf.margin_top = inches(0.10)
@@ -183,6 +199,84 @@ def rect_text(slide, x, y, w, h, text="", fill=WHITE, line=BORDER, size=16, colo
     run.text = text
     set_text_style(run, size, color, bold)
     return shape
+
+
+def normalize_bullet(item) -> tuple[str, str]:
+    if isinstance(item, dict):
+        return str(item.get("heading", "")).strip(), str(item.get("body", "")).strip()
+    return str(item).strip(), ""
+
+
+def density_grid(count: int) -> dict:
+    """Return a Goldwind-native dense layout contract for 100-inch projection."""
+    if count <= 4:
+        return {
+            "columns": 2,
+            "rows": 2,
+            "x": 0.92,
+            "y": 2.02,
+            "card_w": 5.55,
+            "card_h": 1.30,
+            "gap_x": 0.47,
+            "gap_y": 0.36,
+            "heading_size": 14.0,
+            "body_size": 11.5,
+            "body_min": 9.8,
+        }
+    if count <= 6:
+        return {
+            "columns": 3,
+            "rows": 2,
+            "x": 0.92,
+            "y": 1.96,
+            "card_w": 3.62,
+            "card_h": 1.38,
+            "gap_x": 0.34,
+            "gap_y": 0.38,
+            "heading_size": 12.8,
+            "body_size": 10.8,
+            "body_min": 9.2,
+        }
+    return {
+        "columns": 3,
+        "rows": 3,
+        "x": 0.92,
+        "y": 1.86,
+        "card_w": 3.62,
+        "card_h": 1.06,
+        "gap_x": 0.34,
+        "gap_y": 0.22,
+        "heading_size": 11.7,
+        "body_size": 9.6,
+        "body_min": 8.2,
+    }
+
+
+def add_dense_cards(slide, bullets: list) -> None:
+    items = [normalize_bullet(item) for item in bullets if normalize_bullet(item)[0]]
+    if not items:
+        return
+    grid = density_grid(len(items))
+    capacity = grid["columns"] * grid["rows"]
+    for i, (heading, body) in enumerate(items[:capacity]):
+        col = i % grid["columns"]
+        row = i // grid["columns"]
+        x = grid["x"] + col * (grid["card_w"] + grid["gap_x"])
+        y = grid["y"] + row * (grid["card_h"] + grid["gap_y"])
+        card = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, inches(x), inches(y), inches(grid["card_w"]), inches(grid["card_h"]))
+        card.fill.solid()
+        card.fill.fore_color.rgb = WHITE
+        card.line.color.rgb = BORDER
+        bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, inches(x), inches(y), inches(grid["card_w"]), inches(0.10))
+        bar.fill.solid()
+        bar.fill.fore_color.rgb = TEAL
+        bar.line.fill.background()
+
+        heading_size = adaptive_size(heading, grid["heading_size"], grid["heading_size"] - 1.2, ((18, 0.4), (28, 0.5)))
+        body_size = adaptive_size(body, grid["body_size"], grid["body_min"], ((36, 0.5), (52, 0.6), (72, 0.8), (96, 0.7)))
+        text_box(slide, x + 0.17, y + 0.23, grid["card_w"] - 0.34, 0.27, heading, heading_size, PRIMARY, True)
+        if body:
+            text_box(slide, x + 0.17, y + 0.58, grid["card_w"] - 0.34, grid["card_h"] - 0.68, body, body_size, BODY, False)
 
 
 def add_copyright(slide) -> None:
@@ -258,28 +352,9 @@ def add_content(slide, page: dict, section_num: str) -> None:
     source = page.get("source") or ""
     set_title_placeholder(slide, f"{section_num}「{title}」")
     if lead:
-        rect_text(slide, 0.763, 1.04, 12.107, 0.86, lead, fill=GRAY, line=GRAY, size=16, color=BODY, bold=True)
-    y = 2.18
-    for i, item in enumerate(bullets[:4]):
-        if isinstance(item, dict):
-            heading = item.get("heading", "")
-            body = item.get("body", "")
-        else:
-            heading = str(item)
-            body = ""
-        x = 0.92 + (i % 2) * 6.02
-        yy = y + (i // 2) * 1.72
-        card = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, inches(x), inches(yy), inches(5.55), inches(1.28))
-        card.fill.solid()
-        card.fill.fore_color.rgb = WHITE
-        card.line.color.rgb = BORDER
-        bar = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, inches(x), inches(yy), inches(5.55), inches(0.12))
-        bar.fill.solid()
-        bar.fill.fore_color.rgb = TEAL
-        bar.line.fill.background()
-        text_box(slide, x + 0.18, yy + 0.26, 5.15, 0.25, heading, 15, PRIMARY, True)
-        if body:
-            text_box(slide, x + 0.18, yy + 0.62, 5.15, 0.45, body, 12.5, BODY, False)
+        lead_size = adaptive_size(lead, 14.0, 11.8, ((70, 0.6), (100, 0.8), (130, 0.8)))
+        rect_text(slide, 0.763, 1.02, 12.107, 0.66, lead, fill=GRAY, line=GRAY, size=lead_size, color=BODY, bold=True)
+    add_dense_cards(slide, bullets)
     if source:
         text_box(slide, 0.84, 7.10, 8.0, 0.18, f"Source: {source}", 8.5, RGBColor(0xA6, 0xA9, 0xAC), False)
 
@@ -321,6 +396,8 @@ def load_spec(path: Path | None) -> dict:
                     {"heading": "现金创造", "body": "经营现金流与货币资金决定分配安全边际。"},
                     {"heading": "增长基础", "body": "订单、全球化和服务容量支撑后续兑现。"},
                     {"heading": "治理沟通", "body": "信息披露和ESG实践影响长期信任。"},
+                    {"heading": "资本配置", "body": "分红、回购、投资节奏共同影响股东收益。"},
+                    {"heading": "风险边界", "body": "交付、价格和汇率波动需要纳入回报判断。"},
                 ],
                 "source": "Goldwind 2025 Annual Results Report",
             },
@@ -332,6 +409,8 @@ def load_spec(path: Path | None) -> dict:
                     {"heading": "归母净利润 27.74亿", "body": "盈利恢复支撑回报能力。"},
                     {"heading": "综合毛利率 14.18%", "body": "业务质量持续修复。"},
                     {"heading": "加权ROE 7.08%", "body": "较2024年继续改善。"},
+                    {"heading": "费用纪律", "body": "费用率变化决定利润修复能否沉淀。"},
+                    {"heading": "分红能力", "body": "盈利与现金共同约束可持续分配。"},
                 ],
                 "source": "Goldwind 2025 Annual Results Report",
             },
@@ -343,6 +422,8 @@ def load_spec(path: Path | None) -> dict:
                     {"heading": "在手订单 53.7GW", "body": "截至2025年底。"},
                     {"heading": "全球累计装机 165GW", "body": "业务基础持续扩张。"},
                     {"heading": "海外订单 9,270.17MW", "body": "国际业务提供增量线索。"},
+                    {"heading": "服务收入", "body": "存量机组运维带来更平滑的现金贡献。"},
+                    {"heading": "区域组合", "body": "国内外需求分散有助于平滑周期波动。"},
                 ],
                 "source": "Goldwind 2025 Annual Results Report",
             },
@@ -354,6 +435,8 @@ def load_spec(path: Path | None) -> dict:
                     {"heading": "货币资金 103.23亿", "body": "年末资金安全垫。"},
                     {"heading": "已执行分红", "body": "2024年度末期股息每股0.14元。"},
                     {"heading": "后续观察", "body": "结合资本开支和订单交付节奏评估。"},
+                    {"heading": "偿债能力", "body": "债务结构影响分红安全边际。"},
+                    {"heading": "营运周转", "body": "应收、存货和预付款决定现金回笼速度。"},
                 ],
                 "source": "Goldwind 2025 Annual Results Report",
             },
@@ -365,6 +448,8 @@ def load_spec(path: Path | None) -> dict:
                     {"heading": "绿色电力占比99%", "body": "全球生产及运营活动绿电使用。"},
                     {"heading": "供应链协同", "body": "主要零部件供应商绿电使用比例达100%。"},
                     {"heading": "投资者关系", "body": "持续强化业绩沟通与价值传递。"},
+                    {"heading": "评级认可", "body": "外部评级强化长期责任经营背书。"},
+                    {"heading": "长期沟通", "body": "定期披露和互动提升资本市场预期稳定性。"},
                 ],
                 "source": "Goldwind 2025 Annual Results Report",
             },

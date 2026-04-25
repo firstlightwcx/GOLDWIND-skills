@@ -54,7 +54,7 @@ Final delivery contract: expose one and only one user-facing PPTX, named in Chin
 | --- | --- | --- |
 | Cover title | `Arial, Microsoft YaHei, sans-serif` | 54-72px |
 | Page title | `Arial, Microsoft YaHei, sans-serif` | 24-34px |
-| Body | `Microsoft YaHei, Arial, sans-serif` | 16-20px |
+| Body | `Microsoft YaHei, Arial, sans-serif` | 14-20px; dense native PPTX cards may use 8.5-12pt for 100-inch projector delivery |
 | Annotation | `Arial, Microsoft YaHei, sans-serif` | 10-13px |
 
 The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. This template standardizes the editable SVG/PPT path to PPT-safe font stacks while preserving the original hierarchy.
@@ -66,6 +66,7 @@ The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. 
 - Cover/ending: large title block aligned near x=344 for cover and x=186 for ending, vertical blue accent bar near x=73, native background/wave layer in the lower half.
 - TOC: left full-height wind-turbine image plus right agenda list. Use `toc_wind_left.png` at `x=0, y=-0.006in, w=6.92in, h=7.506in`; right text box at `x=7.653in, y=0.187in, w=4.899in, h=6.614in`. Keep TOC to four primary entries only; do not add description rows or secondary explanatory lines on the TOC page.
 - Content pages: wide gray band beginning near x=76 y=112 plus optional table/tag structures.
+- Content density: default content pages should carry 5-9 effective information units when source material allows. Prefer compact 3×2 / 3×3 cards, dense tables, KPI groups, or image+text layouts before splitting into another slide. Use smaller body text and tighter gray bands to improve density, but never allow title duplication, text overflow, image/text collision, or module stacking.
 - Left rail copyright: final PPTX uses a native rotated PowerPoint object at `x=-2.376in, y=3.371in, w=5.512in, h=0.76in, rotation=270`, `font-size=8`. SVG fallback previews may use `matrix(0 -1.33 1.33 0 40.71 624.67)`, but the final Goldwind deck must not rely on SVG matrix export.
 
 ## VI. Page Types
@@ -86,6 +87,7 @@ The original deck uses Arial/Helvetica/PingFang/微软雅黑-derived rendering. 
 - TOC: left full-height wind-turbine image plus right-aligned agenda list.
 - Chapter opener: header plus full-width gray summary band.
 - Dense content: rectangular gray bands, tables, two-column image/text, or screenshot blocks.
+- Native dense content: `goldwind_native_deck.py` uses adaptive 3×2 / 3×3 information-card layouts, compressed lead bands, and font-size reduction for 100-inch projector readability. Six cards is the preferred default for standard briefing pages; nine cards is allowed only when body text is short and validation passes.
 - Avoid modern rounded-card grids unless the user explicitly requests a different style.
 
 ## VIII. Spacing Specification

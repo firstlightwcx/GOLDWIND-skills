@@ -121,6 +121,8 @@ Goldwind customization rule:
 - For `金风通用模板`, the user-facing final output MUST be exactly one PPTX with a Chinese filename derived from the deck title. Do not attach or list QA decks, preview images, exported SVG PPTX files, design docs, or scripts unless the user explicitly asks for them.
 - For `金风通用模板`, the cover page has only three dynamic text slots: `{{TITLE}}`, `{{AUTHOR}}`, and `{{DATE}}`. Use a user-provided title when present; otherwise auto-generate a title from the source material. Do not ask the user to edit any other cover text.
 - For `金风通用模板`, the ending page MUST remain editable PowerPoint elements that match the Goldwind cover/ending layout structure, coordinates, typography, logo/rail/wave/accent placement, and visual hierarchy. The current ending copy is the default value only; it may be changed when the user requests different wording. Never rasterize the ending page as a full-page image.
+- For `金风通用模板`, default正文页信息密度要面向100寸投影汇报：每页优先承载5-9个有效信息单元，正文可使用约8.5-12pt的小字号，采用3×2、3×3、紧凑表格、KPI组或图文并排等布局。除非来源材料确实不足或用户明确要求留白页，不要只放2-4条稀疏要点。
+- 提高密度时必须同步控制可读性：缩小字号、压缩灰色导语带、减少装饰留白、保持模块间距；任何标题重复、文字越界、图片压文字、表格压文字或模块堆叠都是阻塞缺陷。
 - After building a native Goldwind PPTX, run `python3 ${SKILL_DIR}/scripts/goldwind_native_check.py <output.pptx>` and `python3 ${SKILL_DIR}/scripts/pptx_visibility_check.py <output.pptx>`. Any failure is blocking.
 
 ## Main Pipeline Scripts
@@ -218,8 +220,9 @@ Hard mimic requirements:
 8. Preserve the dotted wave background as a full-width template layer on cover/ending and other wave-background layouts. In SVG fallback only, use `bottom_wave.png` at `x=0, y=316, w=1280, h=390`. Do not crop it to a local decoration.
 9. Preserve the TOC page as the native left-image agenda layout, not a dotted-wave substitute: use `toc_wind_left.png` at `x=0, y=-0.006in, w=6.92in, h=7.506in`, with the right TOC text box at `x=7.653in, y=0.187in, w=4.899in, h=6.614in`. Keep four primary entries only; no description rows or secondary explanatory lines.
 10. Preserve content-page titles by filling the native top title placeholder; do not add a second title text box over the placeholder.
-11. Preserve the left rail copyright as a native rotated PowerPoint object when exporting PPTX: `x=-2.376in, y=3.371in, w=5.512in, h=0.76in, rotation=270`, `font-size=8`. In SVG fallback previews, retain the imported `matrix(0 -1.33 1.33 0 40.71 624.67)` anchor, but do not use SVG fallback as the primary Goldwind deliverable.
-12. Run `goldwind_native_check.py` and `pptx_visibility_check.py` on the final native PPTX; any missing TOC left image, duplicate title, unfilled title placeholder, top-left horizontal copyright text, missing media, or wrong layout binding is a blocking failure.
+11. For Goldwind正文页, plan and generate a high-density but readable 100-inch-projector layout: default to 5-9 information units per content slide, use compact 3×2 / 3×3 cards or dense tables when appropriate, and reduce body type before splitting content. Only split a slide when the text would overlap or become unreadable after adaptive sizing.
+12. Preserve the left rail copyright as a native rotated PowerPoint object when exporting PPTX: `x=-2.376in, y=3.371in, w=5.512in, h=0.76in, rotation=270`, `font-size=8`. In SVG fallback previews, retain the imported `matrix(0 -1.33 1.33 0 40.71 624.67)` anchor, but do not use SVG fallback as the primary Goldwind deliverable.
+13. Run `goldwind_native_check.py` and `pptx_visibility_check.py` on the final native PPTX; any missing TOC left image, duplicate title, unfilled title placeholder, top-left horizontal copyright text, missing media, or wrong layout binding is a blocking failure.
 
 If the reference is screenshots or images rather than PPTX, preserve them as style evidence and summarize visible style cues before Step 4.
 

@@ -63,7 +63,8 @@ If the project uses a historical Goldwind PPT reference or the built-in `金风�
 9. Keep the Goldwind TOC page to four primary entries only and use the native left-image layout: `toc_wind_left.png` at `x=0 y=-0.006in w=6.92in h=7.506in`, with the right text box at `x=7.653in y=0.187in w=4.899in h=6.614in`. Do not add subtitles/descriptions to TOC rows; those belong in chapter/content pages, not the reference TOC structure.
 10. Content-page titles must be planned as native top title placeholder values, not as extra overlay text boxes. Duplicate titles or visible placeholder prompt text are blocking defects.
 11. Lock final delivery packaging: expose exactly one PPTX with a Chinese filename derived from the deck title. QA decks, preview images, SVG decks, design docs, scripts, and logs are internal artifacts unless the user explicitly asks for them.
-12. Add native validation to the project test plan: `python3 scripts/goldwind_native_check.py <output.pptx>` and `python3 scripts/pptx_visibility_check.py <output.pptx>` are blocking final checks.
+12. Plan Goldwind正文页 for higher information density on 100-inch projectors: default each content slide to 5-9 useful information units, compact 3×2 / 3×3 cards, dense tables, KPI groups, or image+text layouts. Use smaller body type when needed; do not create sparse slides with only 2-4 bullets unless the source is truly limited or the user requests a breathing page.
+13. Add native validation to the project test plan: `python3 scripts/goldwind_native_check.py <output.pptx>` and `python3 scripts/pptx_visibility_check.py <output.pptx>` are blocking final checks.
 
 ⛔ **BLOCKING**: After completing the read above, provide professional recommendations for the following eight items, then **present them as a bundled package to the user and wait for explicit confirmation or modifications**.
 

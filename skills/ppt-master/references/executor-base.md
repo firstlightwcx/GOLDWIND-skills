@@ -31,6 +31,8 @@ When the selected template is `金风通用模板` or the project uses a histori
 - Goldwind content-page titles must fill the native top title placeholder. Do not add a separate title text box on top of the placeholder; duplicate titles or visible placeholder prompts are blocking defects.
 - Keep the left rail copyright as a native rotated PPT object for final PPTX (`x=-2.376in y=3.371in w=5.512in h=0.76in rotation=270`, `font-size=8`). SVG fallback previews may keep `matrix(0 -1.33 1.33 0 40.71 624.67)`, but do not rely on SVG matrix export for final Goldwind PPTX.
 - Do not use the content-specific simulation/arrow figure or unrelated wind/engineering images as reusable template assets.
+- Goldwind正文页默认服务100寸投影汇报，优先提高单页信息密度：一页应尽量承载5-9个有效信息单元，正文小字号可下探到约8.5-12pt。优先使用3×2/3×3信息卡、紧凑表格、KPI组或图文并排；不要把可合并的内容拆成只有2-4条要点的稀疏页面。
+- 提高密度时先调字号、行距、灰色导语带高度和模块间距；如果仍会出现标题重复、文字越界、图片压文字、表格压文字或模块堆叠，必须拆页或换布局，不得强行塞入。
 - On dense table/image pages, reserve distinct zones for tables, text, and screenshots. Images must not overlap any table text or paragraph text; if space is tight, reduce row height, crop screenshots, or split the slide.
 - For SVG fallback, run `python3 scripts/template_mimic_check.py <project_path> --tolerance 0` and `python3 scripts/layout_sanity_check.py <project_path>`; fix any failure. For final native PPTX, run `python3 scripts/goldwind_native_check.py <output.pptx>` and `python3 scripts/pptx_visibility_check.py <output.pptx>`; fix any failure before delivery.
 
