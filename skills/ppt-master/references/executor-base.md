@@ -21,6 +21,7 @@ If template files exist in the project's `templates/` directory, the template st
 When the selected template is `金风通用模板` or the project uses a historical Goldwind PPT reference:
 
 - Follow the template's fixed coordinates for the top-right logo, left copyright rail, header line, section number, and quoted page title.
+- For historical PPTX references, treat `manifest.json`, `master_layout_refs.json`, and `master_layout_analysis.md` as the native source of truth for coordinates, placeholders, rotation, image relationships, and master/layout inheritance. SVG references are only visual cross-checks and must not override native PPTX anchors.
 - For `金风通用模板`, build the final editable deck with the native PPTX pathway (`scripts/goldwind_native_deck.py` + `templates/layouts/金风通用模板/goldwind_native_base.pptx`) unless the user explicitly asks for SVG-only output. SVG pages may be kept for reference QA, but they are not the primary Goldwind deliverable.
 - For `金风通用模板`, the user-facing final response must expose exactly one PPTX with a Chinese filename derived from the deck title. Do not list QA decks, preview images, SVG decks, design docs, or scripts unless the user explicitly asks for them.
 - Do not add the bottom-right three-stripe page-number block (`x=1204, y=620`). It is a misidentified non-template artifact and is forbidden for `金风通用模板`.

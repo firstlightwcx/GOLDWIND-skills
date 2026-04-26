@@ -30,13 +30,13 @@ When the workflow provides a PPTX reference source, the effective input package 
 Input priority for PPTX-backed template creation:
 
 1. `manifest.json` for factual metadata
-2. `master_layout_refs.json` for unique layout/master structure and inheritance
+2. `master_layout_refs.json` for unique layout/master structure, inheritance, native shape anchors, placeholders, geometry, rotation, and image relationships
 3. `master_layout_analysis.md` for fast structural review
 4. `normalized_assets.json` for canonical asset decisions
 5. exported `assets/` for reusable visual resources
 6. `analysis.md` for page-type guidance
 7. `reference_svg_selection.json` for deciding which exported SVG pages to inspect first
-8. cleaned slide SVG references for composition, spacing, and fixed decorative cues
+8. cleaned slide SVG references for composition feel, spacing rhythm, and visual decorative cues only
 9. screenshots / original PPTX only for style verification
 
 ---
@@ -94,12 +94,14 @@ Templates must strictly follow the finalized template brief and the generated `d
 
 If PPTX import output exists:
 - Prefer imported theme colors and fonts over visually guessed values
+- Prefer native `master_layout_refs.json` anchors over SVG-derived positions for coordinates, placeholders, rotation, and inherited layout objects
 - Reuse canonical backgrounds and logos from `normalized_assets.json` where they are globally meaningful to the template
 - Treat page-type candidates from `analysis.md` as hints, not guarantees
 
 **Precondition**:
 
-- If `reference_svg_selection.json` is provided, do not generate any template SVG or `design_spec.md` until all selected reference SVG files have been read
+- Do not generate any template SVG or `design_spec.md` until `manifest.json`, `master_layout_refs.json`, and `master_layout_analysis.md` have been read
+- If `reference_svg_selection.json` is provided, also read all selected reference SVG files before generation, but do not let SVG override native PPTX anchor facts
 - Before template generation begins, explicitly report the read slide indexes
 
 ### 2.1 PPTX Import Simplification Rule

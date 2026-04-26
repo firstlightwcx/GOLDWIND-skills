@@ -28,7 +28,7 @@ description: >
 > 6. **NO SUB-AGENT SVG GENERATION** — Executor Step 6 SVG generation is context-dependent and MUST be completed by the current main agent end-to-end. Delegating page SVG generation to sub-agents is FORBIDDEN
 > 7. **SEQUENTIAL PAGE GENERATION ONLY** — In Executor Step 6, after the global design context is confirmed, SVG pages MUST be generated sequentially page by page in one continuous pass. Grouped page batches (for example, 5 pages at a time) are FORBIDDEN
 > 8. **SPEC_LOCK RE-READ PER PAGE** — Before generating each SVG page, Executor MUST `read_file <project_path>/spec_lock.md`. All colors / fonts / icons / images MUST come from this file — no values from memory or invented on the fly. Executor MUST also look up the current page's `page_rhythm` tag and apply the matching layout discipline (`anchor` / `dense` / `breathing` — see executor-base.md §2.1). This rule exists to resist context-compression drift on long decks and to break the uniform "every page is a card grid" default
-> 9. **GOLDWIND TEMPLATE MIMIC FIRST** — When a historical Goldwind PPT or `金风通用模板` is provided/selected, template extraction, reference-SVG reading, coordinate/title/font anchor locking, and template-mimic validation MUST happen before content design or SVG generation. Skipping this is a workflow failure.
+> 9. **GOLDWIND TEMPLATE MIMIC FIRST** — When a historical Goldwind PPT or `金风通用模板` is provided/selected, native PPTX master/layout extraction, coordinate/title/font anchor locking, SVG visual cross-checking, and template-mimic validation MUST happen before content design or SVG generation. Skipping this is a workflow failure.
 
 > [!IMPORTANT]
 > ## 🌐 Language & Communication Rule
@@ -200,29 +200,31 @@ When the style reference includes a historical `.pptx` file, prepare it before n
 python3 ${SKILL_DIR}/scripts/pptx_template_import.py "<style_reference.pptx>" -o "<project_or_output_path>/style_reference_import"
 ```
 
-Use the generated import package as the primary style evidence:
+Use the generated import package as the primary style evidence. Native PPTX extraction is the authority; SVG is only a visual cross-check:
 
 - `manifest.json` for slide size, theme colors, fonts, assets, and page candidates
-- `master_layout_analysis.md` for reusable master/layout structure
+- `master_layout_refs.json` for native master/layout structure, placeholder bindings, image relationships, and shape anchors (`x/y/w/h/rotation`)
+- `master_layout_analysis.md` for a readable summary of reusable native master/layout motifs
 - `analysis.md` for page-type and content-pattern hints
-- `reference_svg_selection.json` and selected `svg/slide_*.svg` files for page rhythm, spacing, and visual motifs
+- `reference_svg_selection.json` and selected `svg/slide_*.svg` files for page rhythm, spacing feel, and visual motifs only
 - extracted `assets/` for reusable logos, backgrounds, and brand imagery
 
 Hard mimic requirements:
 
-1. Read every SVG file listed in `reference_svg_selection.json` before writing `design_spec.md`.
-2. Produce a project-level template mimic contract in `design_spec.md` (or a companion `<project_path>/template_mimic.md`) covering page-type mapping, title hierarchy, font plan, logo coordinates, left copyright rail, cover/TOC/ending structure, and reusable asset exclusions.
-3. Only promote true reusable template elements. Content-specific figures, including the simulation/arrow figure previously misidentified from the 2024 work-planning deck, MUST NOT be treated as template assets.
-4. For `金风通用模板`, the bottom-right three-stripe page-number block (`x=1204, y=620, w=76, h=60`) is a forbidden non-template artifact. Do not generate it on any page.
-5. If `金风通用模板` is used, preserve its cover and ending contracts exactly: cover title/name/date only; ending page element structure is locked to the native Goldwind cover/ending layout, while ending text uses current defaults unless the user asks to modify it. The ending page must stay editable and must not be delivered as one flattened image.
-6. Use the native Goldwind pathway by default: `python3 ${SKILL_DIR}/scripts/goldwind_native_deck.py --spec <deck_spec.json> -o <output.pptx>`. This avoids SVG matrix/rotation loss in WPS and keeps logo, rail, wave/background, and master/layout elements editable or natively inherited.
-7. Name the final PPTX in Chinese, preferably from the deck title (for example `金风科技2025股东回报.pptx`). User-facing delivery must list only this one PPTX. Internal QA decks, preview PNGs, SVG reference decks, logs, scripts, and design docs may be created for checking but must not be presented as final outputs unless requested.
-8. Preserve the dotted wave background as a full-width template layer on cover/ending and other wave-background layouts. In SVG fallback only, use `bottom_wave.png` at `x=0, y=316, w=1280, h=390`. Do not crop it to a local decoration.
-9. Preserve the TOC page as the native left-image agenda layout, not a dotted-wave substitute: use `toc_wind_left.png` at `x=0, y=-0.006in, w=6.92in, h=7.506in`, with the right TOC text box at `x=7.653in, y=0.187in, w=4.899in, h=6.614in`. Keep four primary entries only; no description rows or secondary explanatory lines.
-10. Preserve content-page titles by filling the native top title placeholder; do not add a second title text box over the placeholder.
-11. For Goldwind正文页, plan and generate a high-density but readable 100-inch-projector layout: default to 5-9 information units per content slide, use compact 3×2 / 3×3 cards or dense tables when appropriate, and reduce body type before splitting content. Only split a slide when the text would overlap or become unreadable after adaptive sizing.
-12. Preserve the left rail copyright as a native rotated PowerPoint object when exporting PPTX: `x=-2.376in, y=3.371in, w=5.512in, h=0.76in, rotation=270`, `font-size=8`. In SVG fallback previews, retain the imported `matrix(0 -1.33 1.33 0 40.71 624.67)` anchor, but do not use SVG fallback as the primary Goldwind deliverable.
-13. Run `goldwind_native_check.py` and `pptx_visibility_check.py` on the final native PPTX; any missing TOC left image, duplicate title, unfilled title placeholder, top-left horizontal copyright text, missing media, or wrong layout binding is a blocking failure.
+1. Read `manifest.json`, `master_layout_refs.json`, and `master_layout_analysis.md` before any design planning. Coordinates, rotation, placeholders, layout inheritance, logo/image relationships, and native text anchors MUST come from these PPTX-native files, not from SVG guesses.
+2. Read every SVG file listed in `reference_svg_selection.json` when SVG export is available, but use it only for visual rhythm and composition cross-checking. If SVG conflicts with native PPTX geometry, native PPTX geometry wins.
+3. Produce a project-level template mimic contract in `design_spec.md` (or a companion `<project_path>/template_mimic.md`) covering page-type mapping, title hierarchy, font plan, logo coordinates, left copyright rail, cover/TOC/ending structure, and reusable asset exclusions.
+4. Only promote true reusable template elements. Content-specific figures, including the simulation/arrow figure previously misidentified from the 2024 work-planning deck, MUST NOT be treated as template assets.
+5. For `金风通用模板`, the bottom-right three-stripe page-number block (`x=1204, y=620, w=76, h=60`) is a forbidden non-template artifact. Do not generate it on any page.
+6. If `金风通用模板` is used, preserve its cover and ending contracts exactly: cover title/name/date only; ending page element structure is locked to the native Goldwind cover/ending layout, while ending text uses current defaults unless the user asks to modify it. The ending page must stay editable and must not be delivered as one flattened image.
+7. Use the native Goldwind pathway by default: `python3 ${SKILL_DIR}/scripts/goldwind_native_deck.py --spec <deck_spec.json> -o <output.pptx>`. This avoids SVG matrix/rotation loss in WPS and keeps logo, rail, wave/background, and master/layout elements editable or natively inherited.
+8. Name the final PPTX in Chinese, preferably from the deck title (for example `金风科技2025股东回报.pptx`). User-facing delivery must list only this one PPTX. Internal QA decks, preview PNGs, SVG reference decks, logs, scripts, and design docs may be created for checking but must not be presented as final outputs unless requested.
+9. Preserve the dotted wave background as a full-width template layer on cover/ending and other wave-background layouts. In SVG fallback only, use `bottom_wave.png` at `x=0, y=316, w=1280, h=390`. Do not crop it to a local decoration.
+10. Preserve the TOC page as the native left-image agenda layout, not a dotted-wave substitute: use `toc_wind_left.png` at `x=0, y=-0.006in, w=6.92in, h=7.506in`, with the right TOC text box at `x=7.653in, y=0.187in, w=4.899in, h=6.614in`. Keep four primary entries only; no description rows or secondary explanatory lines.
+11. Preserve content-page titles by filling the native top title placeholder; do not add a second title text box over the placeholder.
+12. For Goldwind正文页, plan and generate a high-density but readable 100-inch-projector layout: default to 5-9 information units per content slide, use compact 3×2 / 3×3 cards or dense tables when appropriate, and reduce body type before splitting content. Only split a slide when the text would overlap or become unreadable after adaptive sizing.
+13. Preserve the left rail copyright as a native rotated PowerPoint object when exporting PPTX: `x=-2.376in, y=3.371in, w=5.512in, h=0.76in, rotation=270`, `font-size=8`. In SVG fallback previews, retain the imported `matrix(0 -1.33 1.33 0 40.71 624.67)` anchor, but do not use SVG fallback as the primary Goldwind deliverable.
+14. Run `goldwind_native_check.py` and `pptx_visibility_check.py` on the final native PPTX; any missing TOC left image, duplicate title, unfilled title placeholder, top-left horizontal copyright text, missing media, or wrong layout binding is a blocking failure.
 
 If the reference is screenshots or images rather than PPTX, preserve them as style evidence and summarize visible style cues before Step 4.
 

@@ -58,6 +58,7 @@ python3 skills/ppt-master/scripts/pptx_template_import.py "<reference_template.p
 This helper performs the full PPTX reference preparation in one workspace:
 
 - extracts reusable assets and style metadata
+- extracts native PPTX master/layout anchors, placeholders, geometry, rotation, and image relationships
 - generates `manifest.json`
 - generates `analysis.md`
 - generates `master_layout_refs.json`
@@ -68,7 +69,7 @@ This helper performs the full PPTX reference preparation in one workspace:
 
 It is still a reconstruction aid, not a final direct template conversion.
 
-Use the generated `manifest.json`, `analysis.md`, `master_layout_refs.json`, `master_layout_analysis.md`, exported `assets/`, and `svg/` slide references as internal reference material for template reconstruction.
+Use the generated `manifest.json`, `analysis.md`, `master_layout_refs.json`, `master_layout_analysis.md`, exported `assets/`, and `svg/` slide references as internal reference material for template reconstruction. Native PPTX extraction is the source of truth for coordinates, placeholders, rotation, and inheritance; SVG files are visual cross-checks only.
 
 Then perform an **AI-only asset normalization step** before template generation:
 
@@ -99,18 +100,18 @@ When the reference source is `.pptx`, use the following internal priority order 
 Interpretation rule:
 
 - `manifest.json` is the source of truth for slide size, theme colors, fonts, background inheritance, and reusable asset inventory
-- `master_layout_refs.json` is the source of truth for unique layout/master structure, inherited backgrounds, and slide reuse relationships
+- `master_layout_refs.json` is the source of truth for unique layout/master structure, inherited backgrounds, slide reuse relationships, native shape anchors, placeholder bindings, and image relationships
 - `master_layout_analysis.md` is the compact human-readable summary for quickly understanding reusable master/layout motifs
 - `analysis.md` is the compact human-readable summary used to guide page-type selection
 - `normalized_assets.json` is the source of truth for which imported assets are canonical and which `inline_*` assets are only derived helpers
 - exported `assets/` remain the raw import pool and should not be consumed blindly once normalization exists
-- cleaned `svg/` slides are mandatory reference material for layout rhythm, page composition, and fixed decorative structure
+- cleaned `svg/` slides are reference material for layout rhythm, page composition, and visual decorative structure; they must not override native PPTX coordinates or placeholder facts
 - if the remaining cleaned SVG reference pages are `<= 10`, read all of them; if they are `> 10`, read only `10` representative pages
 - screenshots remain useful for judging composition and style, but should not override extracted factual metadata unless the import result is clearly incomplete
 
 **Hard gate**:
 
-- Before creating any template file, the agent MUST finish reading all SVG files listed in `reference_svg_selection.json`
+- Before creating any template file, the agent MUST finish reading `manifest.json`, `master_layout_refs.json`, and `master_layout_analysis.md`; when SVG export is available, it must also read all SVG files listed in `reference_svg_selection.json`
 - The agent MUST explicitly report the read slide indexes before starting template generation
 
 Do **not** treat the imported PPTX or exported slide SVGs as direct final template assets. The goal is to reconstruct a clean, maintainable PPT Master template package, not to perform 1:1 shape translation.

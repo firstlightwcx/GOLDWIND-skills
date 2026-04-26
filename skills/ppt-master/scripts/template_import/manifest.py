@@ -59,6 +59,7 @@ class SlideRecord:
     text_count: int
     shape_count: int
     page_type: str
+    native_shapes: list[dict[str, Any]]
 
 
 def summarize_part_record(
@@ -76,6 +77,7 @@ def summarize_part_record(
 
     bg_asset = detect_background_asset(root, rels)
     image_targets = extract_image_targets(root, rels)
+    native_shapes = extract_native_shapes(root, rels, copied_assets)
     return {
         "path": part_path,
         "name": PurePosixPath(part_path).name,
@@ -86,6 +88,8 @@ def summarize_part_record(
         "textSamples": extract_text_samples(root),
         "textCount": len(root.findall(".//a:t", NS)) if root is not None else 0,
         "shapeCount": count_slide_shapes(root),
+        "nativeShapes": native_shapes,
+        "nativeShapeCount": len(native_shapes),
         "usedBySlides": used_by_slides,
     }
 
@@ -139,6 +143,14 @@ def emu_to_pixels(value: int) -> int:
     return int(round(value / EMU_PER_INCH * 96))
 
 
+def emu_to_inches(value: int) -> float:
+    return round(value / EMU_PER_INCH, 4)
+
+
+def local_name(tag: str) -> str:
+    return tag.split("}", 1)[-1] if "}" in tag else tag
+
+
 def sanitize_filename(value: str) -> str:
     value = re.sub(r"[^A-Za-z0-9._-]+", "_", value.strip())
     return value.strip("._") or "asset"
@@ -156,6 +168,129 @@ def extract_text_samples(root: ET.Element | None, limit: int = 6) -> list[str]:
         if len(samples) >= limit:
             break
     return samples
+
+
+def extract_shape_text_samples(shape: ET.Element, limit: int = 3) -> list[str]:
+    samples: list[str] = []
+    for node in shape.findall(".//a:t", NS):
+        text = (node.text or "").strip()
+        if not text:
+            continue
+        samples.append(text)
+        if len(samples) >= limit:
+            break
+    return samples
+
+
+def find_xfrm(shape: ET.Element) -> ET.Element | None:
+    for path in ("p:spPr/a:xfrm", "p:xfrm", "p:grpSpPr/a:xfrm"):
+        xfrm = shape.find(path, NS)
+        if xfrm is not None:
+            return xfrm
+    return None
+
+
+def extract_geometry(shape: ET.Element) -> dict[str, Any] | None:
+    xfrm = find_xfrm(shape)
+    if xfrm is None:
+        return None
+    off = xfrm.find("a:off", NS)
+    ext = xfrm.find("a:ext", NS)
+    if off is None or ext is None:
+        return None
+    try:
+        x = int(off.attrib.get("x", "0"))
+        y = int(off.attrib.get("y", "0"))
+        cx = int(ext.attrib.get("cx", "0"))
+        cy = int(ext.attrib.get("cy", "0"))
+        rot = int(xfrm.attrib.get("rot", "0"))
+    except ValueError:
+        return None
+    return {
+        "x_emu": x,
+        "y_emu": y,
+        "w_emu": cx,
+        "h_emu": cy,
+        "x_in": emu_to_inches(x),
+        "y_in": emu_to_inches(y),
+        "w_in": emu_to_inches(cx),
+        "h_in": emu_to_inches(cy),
+        "x_px": emu_to_pixels(x),
+        "y_px": emu_to_pixels(y),
+        "w_px": emu_to_pixels(cx),
+        "h_px": emu_to_pixels(cy),
+        "rotation_deg": round(rot / 60000, 4),
+    }
+
+
+def extract_placeholder(shape: ET.Element) -> dict[str, str] | None:
+    ph = shape.find("p:nvSpPr/p:nvPr/p:ph", NS)
+    if ph is None:
+        return None
+    data = {key: value for key, value in ph.attrib.items() if value}
+    return data or {"type": "body"}
+
+
+def extract_shape_name(shape: ET.Element) -> str | None:
+    nv = shape.find(".//p:cNvPr", NS)
+    if nv is None:
+        return None
+    return nv.attrib.get("name")
+
+
+def extract_shape_asset(
+    shape: ET.Element,
+    rels: dict[str, dict[str, str]],
+    copied_assets: dict[str, str],
+) -> str | None:
+    blip = shape.find(".//a:blip", NS)
+    if blip is None:
+        return None
+    rel_id = blip.attrib.get(f"{{{NS['r']}}}embed")
+    if not rel_id:
+        return None
+    rel = rels.get(rel_id)
+    if not rel or rel["type"] != IMAGE_REL:
+        return None
+    target = rel["target"]
+    return copied_assets.get(target, PurePosixPath(target).name)
+
+
+def extract_native_shapes(
+    root: ET.Element | None,
+    rels: dict[str, dict[str, str]],
+    copied_assets: dict[str, str],
+    *,
+    limit: int = 120,
+) -> list[dict[str, Any]]:
+    """Extract native PPTX shape anchors without going through SVG export."""
+    if root is None:
+        return []
+    sp_tree = root.find("p:cSld/p:spTree", NS)
+    if sp_tree is None:
+        return []
+    records: list[dict[str, Any]] = []
+    for shape in list(sp_tree):
+        kind = local_name(shape.tag)
+        if kind in {"nvGrpSpPr", "grpSpPr", "extLst"}:
+            continue
+        geometry = extract_geometry(shape)
+        text_samples = extract_shape_text_samples(shape)
+        placeholder = extract_placeholder(shape)
+        asset = extract_shape_asset(shape, rels, copied_assets)
+        record: dict[str, Any] = {
+            "kind": kind,
+            "name": extract_shape_name(shape),
+            "geometry": geometry,
+            "placeholder": placeholder,
+            "textSamples": text_samples,
+            "asset": asset,
+        }
+        if geometry or placeholder or text_samples or asset:
+            records.append(record)
+        if len(records) >= limit:
+            break
+    return records
 
 
 def extract_image_targets(root: ET.Element | None, rels: dict[str, dict[str, str]]) -> list[str]:
@@ -300,6 +435,7 @@ def write_analysis(
                 f"  - Name: {slide.name}",
                 f"  - Background: {slide.background_asset or 'none'} ({slide.background_source or 'n/a'})",
                 f"  - Images: {len(slide.image_assets)}",
+                f"  - Native shape anchors: {len(slide.native_shapes)}",
                 f"  - Text sample: {sample}",
             ]
         )
@@ -328,6 +464,7 @@ def write_structure_analysis(
         lines.append("- (none)")
     for layout in layouts:
         sample = " | ".join(layout.get("textSamples", [])[:3]) or "(no text sample)"
+        anchors = summarize_native_anchor_lines(layout.get("nativeShapes", []))
         lines.extend(
             [
                 f"- {layout['name']}",
@@ -336,15 +473,18 @@ def write_structure_analysis(
                 f"  - Used by slides: {', '.join(str(i) for i in layout.get('usedBySlides', [])) or 'n/a'}",
                 f"  - Background asset: {layout.get('backgroundAsset') or 'none'}",
                 f"  - Image assets: {', '.join(layout.get('imageAssets', [])) or 'none'}",
+                f"  - Native shape anchors: {layout.get('nativeShapeCount', 0)}",
                 f"  - Text sample: {sample}",
             ]
         )
+        lines.extend(anchors)
 
     lines.extend(["", "## Masters"])
     if not masters:
         lines.append("- (none)")
     for master in masters:
         sample = " | ".join(master.get("textSamples", [])[:3]) or "(no text sample)"
+        anchors = summarize_native_anchor_lines(master.get("nativeShapes", []))
         lines.extend(
             [
                 f"- {master['name']}",
@@ -353,11 +493,39 @@ def write_structure_analysis(
                 f"  - Used by slides: {', '.join(str(i) for i in master.get('usedBySlides', [])) or 'n/a'}",
                 f"  - Background asset: {master.get('backgroundAsset') or 'none'}",
                 f"  - Image assets: {', '.join(master.get('imageAssets', [])) or 'none'}",
+                f"  - Native shape anchors: {master.get('nativeShapeCount', 0)}",
                 f"  - Text sample: {sample}",
             ]
         )
+        lines.extend(anchors)
 
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def summarize_native_anchor_lines(native_shapes: list[dict[str, Any]], limit: int = 8) -> list[str]:
+    lines: list[str] = []
+    for shape in native_shapes[:limit]:
+        geom = shape.get("geometry") or {}
+        ph = shape.get("placeholder") or {}
+        text = " | ".join(shape.get("textSamples") or []) or ""
+        bits = [
+            f"{shape.get('kind') or 'shape'}",
+            f"name={shape.get('name') or 'n/a'}",
+        ]
+        if ph:
+            bits.append(f"ph={ph}")
+        if geom:
+            bits.append(
+                "x={x_in} y={y_in} w={w_in} h={h_in} rot={rotation_deg}".format(**geom)
+            )
+        if shape.get("asset"):
+            bits.append(f"asset={shape['asset']}")
+        if text:
+            bits.append(f"text={text[:60]}")
+        lines.append(f"    - {'; '.join(bits)}")
+    if len(native_shapes) > limit:
+        lines.append(f"    - ... {len(native_shapes) - limit} more native anchors")
+    return lines
 
 
 def build_manifest(pptx_path: Path, output_dir: Path) -> dict[str, Any]:
@@ -463,6 +631,7 @@ def build_manifest(pptx_path: Path, output_dir: Path) -> dict[str, Any]:
             image_targets = extract_image_targets(slide_root, slide_rels)
             texts = extract_text_samples(slide_root)
             shape_count = count_slide_shapes(slide_root)
+            native_shapes = extract_native_shapes(slide_root, slide_rels, copied_assets)
             page_type = classify_slide(index, len(slide_parts), texts, len(image_targets), shape_count)
 
             resolved_bg = copied_assets.get(bg_asset, PurePosixPath(bg_asset).name if bg_asset else None)
@@ -507,6 +676,7 @@ def build_manifest(pptx_path: Path, output_dir: Path) -> dict[str, Any]:
                     text_count=len(texts),
                     shape_count=shape_count,
                     page_type=page_type,
+                    native_shapes=native_shapes,
                 )
             )
 
@@ -575,6 +745,8 @@ def build_manifest(pptx_path: Path, output_dir: Path) -> dict[str, Any]:
                     "textCount": slide.text_count,
                     "shapeCount": slide.shape_count,
                     "pageType": slide.page_type,
+                    "nativeShapes": slide.native_shapes,
+                    "nativeShapeCount": len(slide.native_shapes),
                 }
                 for slide in slide_records
             ],

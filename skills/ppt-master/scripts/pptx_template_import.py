@@ -3,11 +3,15 @@
 
 This command prepares a reusable reference workspace from a PPTX source. It can:
 
-1. extract lightweight PPTX metadata and reusable assets
+1. extract native PPTX metadata, master/layout anchors, placeholders, and reusable assets
 2. export every slide to SVG with PowerPoint on Windows
 3. export PPTX to PDF on macOS with Keynote as a fallback bridge
 4. replace inline Base64 images inside exported SVG files with external assets
-5. optimize cleaned reference SVG files for downstream inspection
+5. optimize cleaned reference SVG files for downstream visual inspection
+
+Native PPTX facts are the primary source of truth. Exported SVG files are
+visual references only and must not override original PowerPoint coordinates,
+placeholder bindings, rotation, or master/layout inheritance.
 """
 
 from __future__ import annotations
@@ -385,6 +389,7 @@ def main() -> int:
         print(f"Output directory: {output_dir}")
         if not args.skip_manifest:
             print(f"Manifest: {manifest_path.name}")
+            print("Native refs: master_layout_refs.json, master_layout_analysis.md")
             print(f"Assets exported: {len(manifest['assets']['allAssets'])}")
             print(f"Common assets: {len(manifest['assets']['commonAssets'])}")
             print(f"Slides analyzed: {len(manifest['slides'])}")
@@ -438,6 +443,7 @@ def main() -> int:
     print(f"Exported SVG slides: {len(results)}")
     print(f"Inline images externalized: {total_images}")
     print(f"SVG bytes: {total_before} -> {final_svg_bytes}")
+    print("Native refs: master_layout_refs.json, master_layout_analysis.md")
     print(f"Reference SVG selection: {output_dir / 'reference_svg_selection.json'}")
     print(f"Output directory: {output_dir}")
     return 0
